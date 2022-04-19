@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title></title>
-        <style>
-body {
-    margin: 0px;
-    padding: 0px;
-}
 
-        #btnSnapshot {
-            width: 200px;
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body {
+            margin: 2rem;
+            padding: 0px;
+            background-color: #f5f5f5;
+            font-family: sans-serif;
+            font-size: 12px;
         }
 
-        #btnVideo {
-            width: 200px;
+        button {
+            font-size: 1rem;
         }
 
-        #webcam {
+        label {
+            font-size: 1rem;
+        }
+
+        select {
+            font-size: 1rem;
+            padding: 0.2rem;
+        }
+
+        #localVideo {
             width: 100%;
             height: auto;
             border: none;
@@ -30,111 +39,289 @@ body {
             background-color: #FFFFCE;
             visibility: visible;
             border: thin dotted #000066;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
         }
 
         #grid {
-            position:absolute;
-            top:0;
-            left:0;
-            right:0;
-            bottom:0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             z-index: 9999;
-            width:100%;
-            height:100%;
-            /*background-color:#00ff00;*/
+            width: 100%;
+            height: 100%;
             opacity: 0.5;
-            text-align:center;
+            text-align: center;
 
             background-size: 40px 40px;
             background-image:
                 linear-gradient(to right, #999999 1px, transparent 1px),
-            linear-gradient(to bottom, #999999 1px, transparent 1px);
+                linear-gradient(to bottom, #999999 1px, transparent 1px);
+        }
+
+        .error {
+            color: red;
+            font-size: 1rem;
+            font-weight: bold;
+            padding-bottom: 1rem;
         }
 
         .info {
-            color: red;
-            font-weight: bold;
+            color: green;
+            font-size: 1rem;
         }
-        </style>
-    </head>
-    <body>
-        <div id="position" class="info">Mouseposition:</div>
-        <div id="distance" class="info">Distance:</div>
-        <div id="ebene">
-            <video id="webcam" autoplay="true" autobuffer></video><br>
-            <div id="grid"></div>
-        </div>
-        <button id="btnSnapshot">take a snapshot</button><br>
-        <button id="btnVideo">start recording</button>
 
-        <input type="text" id="gridDistance" value="">
-        <button id="btnLoadGrid"
-            onclick="create_grid(document.getElementById('gridDistance').value)">load grid</button>
+        #menu {
+            border: thin solid #000066;
+            padding: 2rem;
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
 
-        <script language="javascript" type="text/javascript">
-            var clicked = false;
-            var p1 = new Object();
-            var p2 = new Object();
+        #menu input {
+            width: 100%;
+        }
 
-            function get_position() {
-                var p = new Object();
-                p.x = document.all ? event.offsetX : event.pageX;
-                p.y = document.all ? event.offsetY : event.pageY;
+        #menu select {
+            width: 100%;
+        }
+    </style>
+</head>
 
-                return p;
+<body>
+    <div id="error" class="error"></div>
+    <div id="position" class="info">Mouseposition:</div>
+    <div id="distance" class="info">Distance:</div>
+    <div id="ebene">
+        <!--<video id="localVideo" autoplay="true" autobuffer playsinline controls="false"></video><br>-->
+        <video id="localVideo" autoplay="true" autobuffer></video><br>
+        <div id="grid"></div>
+    </div>
+
+    <div id="menu">
+        <button id="btnSnapshot" disabled>take a snapshot</button>
+        <button id="btnVideo" disabled>start recording</button>
+        <button id="btnToggleGrid">toggle grid</button>
+
+        <input type="text" id="gridDistance" value="" disabled>
+        <button id="btnLoadGrid" onclick="createGrid(document.getElementById('gridDistance').value)" disabled>load
+            grid</button>
+
+        <form name="cameraResolutionForm">
+            <label for="cameraResolutions">camera resolution</label>
+            <select id="cameraResolutions">
+            </select>
+        </form>
+
+        <form name="outputResolutionForm">
+            <label for="outputResolutions">output resolution</label>
+            <select id="outputResolutions">
+            </select>
+        </form>
+
+        <form name="availableCamerasForm">
+            <label for="availableCameras">available cameras</label>
+            <select id="availableCameras">
+            </select>
+        </form>
+    </div>
+
+    <script language="javascript" type="text/javascript">
+        var clicked = false;
+        var p1 = new Object();
+        var p2 = new Object();
+
+        function getPosition() {
+            var p = new Object();
+            p.x = document.all ? event.offsetX : event.pageX;
+            p.y = document.all ? event.offsetY : event.pageY;
+
+            return p;
+        }
+
+        function setDistance() {
+            if (clicked === false) {
+                p1 = getPosition();
+                clicked = true;
+            } else {
+                p2 = getPosition();
+                d = distance(p1, p2);
+
+                createGrid(d);
+
+                clicked = false;
             }
+        }
 
-            function set_distance() {
-                if(clicked === false) {
-                    p1 = get_position();
-                    clicked = true;
-                } else {
-                    p2 = get_position();
-                    d = distance(p1, p2);
+        function createGrid(d) {
+            var grid = document.querySelector('#grid');
+            grid.style['background-size'] = d + "px " + d + "px";
 
-                    create_grid(d);
+            var out = 'Distance: ' + d;
+            document.getElementById('distance').innerHTML = out;
+        }
 
-                    clicked = false;
+        function showPosition(event) {
+            p = getPosition();
+            var out = 'Mouseposition: ' + p.x + ', ' + p.y;
+            document.getElementById('position').innerHTML = out;
+        }
+
+        function distance(p1, p2) {
+            return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+        }
+
+        function toggleGrid(event) {
+            // option 1
+            /*var gridVisibility = getComputedStyle(document.getElementById('grid')).getPropertyValue('visibility');
+            if (gridVisibility === "hidden") {
+                document.getElementById('grid').style.setProperty('visibility', 'visible');
+            } else {
+                document.getElementById('grid').style.setProperty('visibility', 'hidden');
+            }*/
+
+            // option 2
+            var gridOpacity = getComputedStyle(document.getElementById('grid')).getPropertyValue('opacity');
+            if (gridOpacity === "0.5") {
+                document.getElementById('grid').style.setProperty('opacity', '0');
+            } else {
+                document.getElementById('grid').style.setProperty('opacity', '0.5');
+            }
+        }
+
+        function takeASnap() {
+            const canvas = document.createElement('canvas'); // create a canvas
+            const ctx = canvas.getContext('2d'); // get its context
+            canvas.width = vid.videoWidth; // set its size to the one of the video
+            canvas.height = vid.videoHeight;
+            ctx.drawImage(vid, 0, 0); // the video
+            return new Promise((res, rej) => {
+                canvas.toBlob(res, 'image/jpeg'); // request a Blob from the canvas
+            });
+        }
+
+        function downloadPicture(blob) {
+            // uses the <a download> to download a Blob
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "screenshot-" + Date.now() + ".jpg";
+            document.body.appendChild(a);
+            a.click();
+        }
+
+        function startRecording() {
+            // switch button's behavior
+            const btn = this;
+            btn.textContent = 'stop recording';
+            btn.onclick = stopRecording;
+
+            const chunks = []; // here we will save all video data
+            const rec = new MediaRecorder(vid.srcObject);
+            // this event contains our data
+            rec.ondataavailable = e => chunks.push(e.data);
+            // when done, concatenate our chunks in a single Blob
+            rec.onstop = e => downloadVideo(new Blob(chunks));
+            rec.start();
+
+            function stopRecording() {
+                rec.stop();
+                // switch button's behavior
+                btn.textContent = 'start recording';
+                btn.onclick = startRecording;
+            }
+        }
+
+        function downloadVideo(blob) {
+            // uses the <a download> to download a Blob
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "recorded-" + Date.now() + ".webm";
+            document.body.appendChild(a);
+            a.click();
+        }
+
+        function setChoosableResolutions() {
+            const resolutions = ['800x600', '1024x768', '1280x1024',
+                '1920x1080'
+            ]; // add more resolutions here, if needed.
+            const outputResolutions = document.getElementById('outputResolutions');
+            const cameraResolutions = document.getElementById('cameraResolutions');
+
+            resolutions.forEach(element => {
+                outputResolutions.add(new Option(element, element));
+                cameraResolutions.add(new Option(element, element));
+            });
+        }
+
+        async function chooseCameraResolution() {
+            const currentCamera = document.getElementById('availableCameras').value;
+            const cameraResolution = document.getElementById('cameraResolutions').value.split('x');
+            //console.log(availableCameras.value);
+            await playVideoFromCamera(currentCamera, cameraResolution[0], cameraResolution[1]);
+        }
+
+        function chooseOutputResolution(event) {
+            const outputResolution = document.getElementById('outputResolutions').value.split('x');
+            const ebene = document.getElementById('ebene');
+
+            ebene.style.setProperty('width', outputResolution[0] + 'px');
+            ebene.style.setProperty('height', outputResolution[1] + 'px');
+        }
+
+        // Fetch an array of devices of a certain type
+        async function getConnectedDevices(type) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            return devices.filter(device => device.kind === type)
+        }
+
+        function removeAll(selectBox) {
+            while (selectBox.options.length > 0) {
+                selectBox.remove(0);
+            }
+        }
+
+        // Updates the select element with the provided set of cameras
+        async function updateCameraList(cameras) {
+            const availableCameras = document.getElementById('availableCameras');
+            removeAll(availableCameras);
+            if (cameras && cameras.length > 0) {
+                //console.dir(cameras);
+                cameras.forEach(camera => {
+                    const cameraOption = new Option(camera.label, camera.deviceId);
+                    availableCameras.add(cameraOption);
+                })
+            }
+        }
+
+        // Open camera with at least minWidth and minHeight capabilities
+        async function openCamera(cameraId, minWidth/*, minHeight*/) {
+            const constraints = {
+                'audio': false, //{'echoCancellation': true},
+                'video': {
+                    'deviceId': cameraId,
+                    'width': {
+                        'min': minWidth
+                    }/*,
+                    'height': {
+                        'min': minHeight
+                    }*/
                 }
             }
 
-            function create_grid(d) {
-                    var grid = document.querySelector('#grid');
-                    grid.style['background-size'] = d + "px " + d + "px";
+            return await navigator.mediaDevices.getUserMedia(constraints);
+        }
 
-                    var out = 'Distance: ' + d;
-                    document.getElementById('distance').innerHTML = out;
-            }
-
-            function show_position(event) {
-                p = get_position();
-                var out = 'Mouseposition: ' + p.x + ', ' + p.y;
-                document.getElementById('position').innerHTML = out;
-            }
-
-            document.getElementById('grid').onmousemove = show_position;
-            document.getElementById('grid').onclick = set_distance;
-
-            function distance(p1, p2) {
-                return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-            }
-        </script>
-
-        <script language="javascript" type="text/javascript">
-            (function(){
-                const vid = document.querySelector('video');
-                var mediaOptions = { audio: false, video: true };
-
-                if (!navigator.mediaDevices.getUserMedia){
-                    return alert("getUserMedia not supported in this browser.");
-                }
-
-                navigator.mediaDevices.getUserMedia(mediaOptions) // request cam
-                    .then(stream => {
-                        vid.srcObject = stream; // don't use createObjectURL(MediaStream)
-                        return vid.play(); // returns a Promise
-                    })
-                    .then(()=>{ // enable the button
+        async function playVideoFromCamera(cameraId, minWidth = 800/*, minHeight = 600*/) {
+            try {
+                const stream = await openCamera(cameraId, minWidth/*, minHeight*/);
+                const videoElement = document.querySelector('video#localVideo');
+                videoElement.srcObject = stream;
+                videoElement.play()
+                    .then(() => { // enable the button
                         const btn = document.querySelector("#btnSnapshot");
                         btn.disabled = false;
                         btn.onclick = e => {
@@ -142,63 +329,49 @@ body {
                                 .then(downloadPicture);
                         };
                     })
-                    .then(()=>{ // enable the button
+                    .then(() => { // enable the button
                         const btn = document.querySelector("#btnVideo");
                         btn.disabled = false;
                         btn.onclick = startRecording;
                     })
-                    .catch(e=>alert(e));
+            } catch (error) {
+                console.error('Error opening video camera.', error);
+                alert(error);
+            }
+        }
 
-                function takeASnap(){
-                    const canvas = document.createElement('canvas'); // create a canvas
-                    const ctx = canvas.getContext('2d'); // get its context
-                    canvas.width = vid.videoWidth; // set its size to the one of the video
-                    canvas.height = vid.videoHeight;
-                    ctx.drawImage(vid, 0,0); // the video
-                    return new Promise((res, rej)=>{
-                        canvas.toBlob(res, 'image/jpeg'); // request a Blob from the canvas
-                    });
+        document.onreadystatechange = async function () {
+            if (document.readyState == "complete") {
+
+                if (!navigator.mediaDevices.getUserMedia) {
+                    const err = "getUserMedia not supported in this browser.";
+                    console.log(err);
+                    return alert(err);
                 }
 
-                function downloadPicture(blob){
-                    // uses the <a download> to download a Blob
-                    let a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = "screenshot-" + Date.now() + ".jpg";
-                    document.body.appendChild(a);
-                    a.click();
+                document.getElementById('grid').onmousemove = showPosition;
+                document.getElementById('grid').onclick = setDistance;
+                document.getElementById('btnToggleGrid').onclick = toggleGrid;
+                document.getElementById('cameraResolutions').onchange = chooseCameraResolution;
+                document.getElementById('outputResolutions').onchange = chooseOutputResolution;
+
+                setChoosableResolutions();
+
+                // Get the initial set of cameras connected
+                const videoCameras = await getConnectedDevices('videoinput')
+                if (videoCameras && videoCameras.length > 0) {
+                    await updateCameraList(videoCameras);
+                    await playVideoFromCamera(videoCameras[0].deviceId);
                 }
 
-                function startRecording(){
-                    // switch button's behavior
-                    const btn = this;
-                    btn.textContent = 'stop recording';
-                    btn.onclick = stopRecording;
+                // Listen for changes to media devices and update the list accordingly
+                navigator.mediaDevices.addEventListener('devicechange', async event => {
+                    const newCameraList = await getConnectedDevices('videoinput');
+                    await updateCameraList(newCameraList);
+                });
+            }
+        }
+    </script>
+</body>
 
-                    const chunks = []; // here we will save all video data
-                    const rec = new MediaRecorder(vid.srcObject);
-                    // this event contains our data
-                    rec.ondataavailable = e => chunks.push(e.data);
-                    // when done, concatenate our chunks in a single Blob
-                    rec.onstop = e => downloadVideo(new Blob(chunks));
-                    rec.start();
-                    function stopRecording(){
-                        rec.stop();
-                        // switch button's behavior
-                        btn.textContent = 'start recording';
-                        btn.onclick = startRecording;
-                    }
-                }
-
-                function downloadVideo(blob){
-                    // uses the <a download> to download a Blob
-                    let a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = "recorded-" + Date.now() + ".webm";
-                    document.body.appendChild(a);
-                    a.click();
-                }
-            })();
-        </script>
-    </body>
 </html>
