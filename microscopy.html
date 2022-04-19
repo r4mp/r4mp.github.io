@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <style>
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+        #btnSnapshot {
+            width: 200px;
+        }
+
+        #btnVideo {
+            width: 200px;
+        }
+
+        #webcam {
+            width: 100%;
+            height: auto;
+            border: none;
+        }
+
+        #ebene {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #FFFFCE;
+            visibility: visible;
+            border: thin dotted #000066;
+        }
+
+        #grid {
+            position:absolute;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            z-index: 9999;
+            width:100%;
+            height:100%;
+            /*background-color:#00ff00;*/
+            opacity: 0.5;
+            text-align:center;
+
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, #999999 1px, transparent 1px),
+            linear-gradient(to bottom, #999999 1px, transparent 1px);
+        }
+
+        .info {
+            color: red;
+            font-weight: bold;
+        }
+        </style>
+    </head>
+    <body>
+        <div id="position" class="info">Mouseposition:</div>
+        <div id="distance" class="info">Distance:</div>
+        <div id="ebene">
+            <video id="webcam" autoplay="true" autobuffer></video><br>
+            <div id="grid"></div>
+        </div>
+        <button id="btnSnapshot">take a snapshot</button><br>
+        <button id="btnVideo">start recording</button>
+
+        <input type="text" id="gridDistance" value="">
+        <button id="btnLoadGrid"
+            onclick="create_grid(document.getElementById('gridDistance').value)">load grid</button>
+
+        <script language="javascript" type="text/javascript">
+            var clicked = false;
+            var p1 = new Object();
+            var p2 = new Object();
+
+            function get_position() {
+                var p = new Object();
+                p.x = document.all ? event.offsetX : event.pageX;
+                p.y = document.all ? event.offsetY : event.pageY;
+
+                return p;
+            }
+
+            function set_distance() {
+                if(clicked === false) {
+                    p1 = get_position();
+                    clicked = true;
+                } else {
+                    p2 = get_position();
+                    d = distance(p1, p2);
+
+                    create_grid(d);
+
+                    clicked = false;
+                }
+            }
+
+            function create_grid(d) {
+                    var grid = document.querySelector('#grid');
+                    grid.style['background-size'] = d + "px " + d + "px";
+
+                    var out = 'Distance: ' + d;
+                    document.getElementById('distance').innerHTML = out;
+            }
+
+            function show_position(event) {
+                p = get_position();
+                var out = 'Mouseposition: ' + p.x + ', ' + p.y;
+                document.getElementById('position').innerHTML = out;
+            }
+
+            document.getElementById('grid').onmousemove = show_position;
+            document.getElementById('grid').onclick = set_distance;
+
+            function distance(p1, p2) {
+                return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            }
+        </script>
+
+        <script language="javascript" type="text/javascript">
+            (function(){
+                const vid = document.querySelector('video');
+                var mediaOptions = { audio: false, video: true };
+
+                if (!navigator.mediaDevices.getUserMedia){
+                    return alert("getUserMedia not supported in this browser.");
+                }
+
+                navigator.mediaDevices.getUserMedia(mediaOptions) // request cam
+                    .then(stream => {
+                        vid.srcObject = stream; // don't use createObjectURL(MediaStream)
+                        return vid.play(); // returns a Promise
+                    })
+                    .then(()=>{ // enable the button
+                        const btn = document.querySelector("#btnSnapshot");
+                        btn.disabled = false;
+                        btn.onclick = e => {
+                            takeASnap()
+                                .then(downloadPicture);
+                        };
+                    })
+                    .then(()=>{ // enable the button
+                        const btn = document.querySelector("#btnVideo");
+                        btn.disabled = false;
+                        btn.onclick = startRecording;
+                    })
+                    .catch(e=>alert(e));
+
+                function takeASnap(){
+                    const canvas = document.createElement('canvas'); // create a canvas
+                    const ctx = canvas.getContext('2d'); // get its context
+                    canvas.width = vid.videoWidth; // set its size to the one of the video
+                    canvas.height = vid.videoHeight;
+                    ctx.drawImage(vid, 0,0); // the video
+                    return new Promise((res, rej)=>{
+                        canvas.toBlob(res, 'image/jpeg'); // request a Blob from the canvas
+                    });
+                }
+
+                function downloadPicture(blob){
+                    // uses the <a download> to download a Blob
+                    let a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "screenshot-" + Date.now() + ".jpg";
+                    document.body.appendChild(a);
+                    a.click();
+                }
+
+                function startRecording(){
+                    // switch button's behavior
+                    const btn = this;
+                    btn.textContent = 'stop recording';
+                    btn.onclick = stopRecording;
+
+                    const chunks = []; // here we will save all video data
+                    const rec = new MediaRecorder(vid.srcObject);
+                    // this event contains our data
+                    rec.ondataavailable = e => chunks.push(e.data);
+                    // when done, concatenate our chunks in a single Blob
+                    rec.onstop = e => downloadVideo(new Blob(chunks));
+                    rec.start();
+                    function stopRecording(){
+                        rec.stop();
+                        // switch button's behavior
+                        btn.textContent = 'start recording';
+                        btn.onclick = startRecording;
+                    }
+                }
+
+                function downloadVideo(blob){
+                    // uses the <a download> to download a Blob
+                    let a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "recorded-" + Date.now() + ".webm";
+                    document.body.appendChild(a);
+                    a.click();
+                }
+            })();
+        </script>
+    </body>
+</html>
