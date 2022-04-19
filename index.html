@@ -245,15 +245,80 @@
         }
 
         function setChoosableResolutions() {
-            const resolutions = ['800x600', '1024x768', '1280x1024',
-                '1920x1080'
-            ]; // add more resolutions here, if needed.
+            const resolutions = [{
+                    "label": "4K(UHD)",
+                    "width": 3840,
+                    "height": 2160,
+                    "ratio": "16:9"
+                },
+                {
+                    "label": "1080p(FHD)",
+                    "width": 1920,
+                    "height": 1080,
+                    "ratio": "16:9"
+                },
+                {
+                    "label": "UXGA",
+                    "width": 1600,
+                    "height": 1200,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "720p(HD)",
+                    "width": 1280,
+                    "height": 720,
+                    "ratio": "16:9"
+                },
+                {
+                    "label": "SVGA",
+                    "width": 800,
+                    "height": 600,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "VGA",
+                    "width": 640,
+                    "height": 480,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "360p(nHD)",
+                    "width": 640,
+                    "height": 360,
+                    "ratio": "16:9"
+                },
+                {
+                    "label": "CIF",
+                    "width": 352,
+                    "height": 288,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "QVGA",
+                    "width": 320,
+                    "height": 240,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "QCIF",
+                    "width": 176,
+                    "height": 144,
+                    "ratio": "4:3"
+                },
+                {
+                    "label": "QQVGA",
+                    "width": 160,
+                    "height": 120,
+                    "ratio": "4:3"
+                }
+
+            ];
             const outputResolutions = document.getElementById('outputResolutions');
             const cameraResolutions = document.getElementById('cameraResolutions');
 
             resolutions.forEach(element => {
-                outputResolutions.add(new Option(element, element));
-                cameraResolutions.add(new Option(element, element));
+                outputResolutions.add(new Option(element.label + " - " + element.width + "x" + element.height, element.width + "x" + element.height));
+                cameraResolutions.add(new Option(element.label + " - " + element.width + "x" + element.height, element.width + "x" + element.height));
             });
         }
 
@@ -298,26 +363,27 @@
         }
 
         // Open camera with at least minWidth and minHeight capabilities
-        async function openCamera(cameraId, minWidth/*, minHeight*/) {
+        async function openCamera(cameraId, minWidth /*, minHeight*/ ) {
             const constraints = {
                 'audio': false, //{'echoCancellation': true},
                 'video': {
                     'deviceId': cameraId,
                     'width': {
                         'min': minWidth
-                    }/*,
-                    'height': {
-                        'min': minHeight
-                    }*/
+                    }
+                    /*,
+                                        'height': {
+                                            'min': minHeight
+                                        }*/
                 }
             }
 
             return await navigator.mediaDevices.getUserMedia(constraints);
         }
 
-        async function playVideoFromCamera(cameraId, minWidth = 800/*, minHeight = 600*/) {
+        async function playVideoFromCamera(cameraId, minWidth = 800 /*, minHeight = 600*/ ) {
             try {
-                const stream = await openCamera(cameraId, minWidth/*, minHeight*/);
+                const stream = await openCamera(cameraId, minWidth /*, minHeight*/ );
                 const videoElement = document.querySelector('video#localVideo');
                 videoElement.srcObject = stream;
                 videoElement.play()
