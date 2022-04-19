@@ -96,11 +96,6 @@
     <div id="error" class="error"></div>
     <div id="position" class="info">Mouseposition:</div>
     <div id="distance" class="info">Distance:</div>
-    <div id="ebene">
-        <!--<video id="localVideo" autoplay="true" autobuffer playsinline controls="false"></video><br>-->
-        <video id="localVideo" autoplay="true" autobuffer></video><br>
-        <div id="grid"></div>
-    </div>
 
     <div id="menu">
         <button id="btnSnapshot" disabled>take a snapshot</button>
@@ -128,6 +123,12 @@
             <select id="availableCameras">
             </select>
         </form>
+    </div>
+
+    <div id="ebene">
+        <!--<video id="localVideo" autoplay="true" autobuffer playsinline controls="false"></video><br>-->
+        <video id="localVideo" autoplay="true" autobuffer></video><br>
+        <div id="grid"></div>
     </div>
 
     <script language="javascript" type="text/javascript">
@@ -194,11 +195,12 @@
         }
 
         function takeASnap() {
+            const videoElement = document.querySelector('video#localVideo');
             const canvas = document.createElement('canvas'); // create a canvas
             const ctx = canvas.getContext('2d'); // get its context
-            canvas.width = vid.videoWidth; // set its size to the one of the video
-            canvas.height = vid.videoHeight;
-            ctx.drawImage(vid, 0, 0); // the video
+            canvas.width = videoElement.videoWidth; // set its size to the one of the video
+            canvas.height = videoElement.videoHeight;
+            ctx.drawImage(videoElement, 0, 0); // the video
             return new Promise((res, rej) => {
                 canvas.toBlob(res, 'image/jpeg'); // request a Blob from the canvas
             });
@@ -285,7 +287,8 @@
                     "label": "SVGA",
                     "width": 800,
                     "height": 600,
-                    "ratio": "4:3"
+                    "ratio": "4:3",
+                    "default": true
                 },
                 {
                     "label": "VGA",
@@ -329,8 +332,18 @@
             const cameraResolutions = document.getElementById('cameraResolutions');
 
             resolutions.forEach(element => {
-                outputResolutions.add(new Option(element.label + " - " + element.width + "x" + element.height, element.width + "x" + element.height));
-                cameraResolutions.add(new Option(element.label + " - " + element.width + "x" + element.height, element.width + "x" + element.height));
+                if (element.default === true) { // TODO: Find a better solution
+                    outputResolutions.add(new Option(element.label + " - " + element.width + "x" + element
+                        .height, element.width + "x" + element.height, true, true));
+                    cameraResolutions.add(new Option(element.label + " - " + element.width + "x" + element
+                        .height, element.width + "x" + element.height, true, true));
+                } else {
+                    outputResolutions.add(new Option(element.label + " - " + element.width + "x" + element
+                        .height, element.width + "x" + element.height));
+                    cameraResolutions.add(new Option(element.label + " - " + element.width + "x" + element
+                        .height, element.width + "x" + element.height));
+                }
+
             });
         }
 
