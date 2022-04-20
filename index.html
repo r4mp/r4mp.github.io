@@ -364,6 +364,11 @@
             ebene.style.setProperty('height', outputResolution[1] + 'px');
         }
 
+        function chooseCamera() {
+            chooseCameraResolution();
+            chooseOutputResolution();
+        }
+
         // Fetch an array of devices of a certain type
         async function getConnectedDevices(type) {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -386,6 +391,7 @@
                     const cameraOption = new Option(camera.label, camera.deviceId);
                     availableCameras.add(cameraOption);
                 })
+                chooseCamera();
             }
         }
 
@@ -447,6 +453,7 @@
                 document.getElementById('btnToggleGrid').onclick = toggleGrid;
                 document.getElementById('cameraResolutions').onchange = chooseCameraResolution;
                 document.getElementById('outputResolutions').onchange = chooseOutputResolution;
+                document.getElementById('availableCameras').onchange = chooseCamera;
 
                 setChoosableResolutions();
 
