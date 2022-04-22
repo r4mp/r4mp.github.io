@@ -369,7 +369,7 @@
             const currentCamera = document.getElementById('availableCameras').value;
             const cameraResolution = document.getElementById('cameraResolutions').value.split('x');
             //console.log(availableCameras.value);
-            await playVideoFromCamera(currentCamera, cameraResolution[0], cameraResolution[1]);
+            await playVideoFromCamera(currentCamera, cameraResolution[0]/*, cameraResolution[1]*/);
         }
 
         function chooseOutputResolution(event) {
