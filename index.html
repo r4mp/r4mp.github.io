@@ -54,6 +54,7 @@
             height: 100%;
             opacity: 0.5;
             text-align: center;
+            visibility: hidden;
 
             background-size: 40px 40px;
             background-image:
@@ -202,20 +203,20 @@
 
         function toggleGrid(event) {
             // option 1
-            /*var gridVisibility = getComputedStyle(document.getElementById('grid')).getPropertyValue('visibility');
+            var gridVisibility = getComputedStyle(document.getElementById('grid')).getPropertyValue('visibility');
             if (gridVisibility === "hidden") {
                 document.getElementById('grid').style.setProperty('visibility', 'visible');
             } else {
                 document.getElementById('grid').style.setProperty('visibility', 'hidden');
-            }*/
+            }
 
             // option 2
-            var gridOpacity = getComputedStyle(document.getElementById('grid')).getPropertyValue('opacity');
+            /*var gridOpacity = getComputedStyle(document.getElementById('grid')).getPropertyValue('opacity');
             if (gridOpacity === "0.5") {
                 document.getElementById('grid').style.setProperty('opacity', '0');
             } else {
                 document.getElementById('grid').style.setProperty('opacity', '0.5');
-            }
+            }*/
         }
 
         function takeASnap() {
