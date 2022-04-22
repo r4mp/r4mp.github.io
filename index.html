@@ -113,12 +113,14 @@
     <div id="position" class="info mouseposition"></div>
     <div id="distance" class="info distance"></div>
     <div id="cameraInformation" class="info cameraInformation"></div>
+    <ul id="constraintList"></ul>
 
     <div id="menu">
         <button id="btnSnapshot" disabled>take a snapshot</button>
         <button id="btnVideo" disabled>start recording</button>
         <button id="btnToggleGrid">toggle grid</button>
-        <button id="btnGetCurrentCamInformation" onclick="getCurrentCamInformation();" >Get current camera information</button>
+        <button id="btnGetCurrentCamInformation" onclick="getCurrentCamInformation();">Get current camera
+            information</button>
 
         <input type="text" id="gridDistance" value="" disabled>
         <button id="btnLoadGrid" onclick="createGrid(document.getElementById('gridDistance').value)" disabled>load
@@ -144,8 +146,7 @@
     </div>
 
     <div id="ebene">
-        <!--<video id="localVideo" autoplay="true" autobuffer playsinline controls="false"></video><br>-->
-        <video id="localVideo" autoplay="true" autobuffer></video><br>
+        <video id="localVideo" autoplay="true" autobuffer playsinline controls="false"></video><br>
         <div id="grid"></div>
     </div>
 
@@ -374,8 +375,7 @@
         async function chooseCameraResolution() {
             const currentCamera = document.getElementById('availableCameras').value;
             const cameraResolution = document.getElementById('cameraResolutions').value.split('x');
-            //console.log(availableCameras.value);
-            await playVideoFromCamera(currentCamera, cameraResolution[0]/*, cameraResolution[1]*/);
+            await playVideoFromCamera(currentCamera, cameraResolution[0]);
         }
 
         function chooseOutputResolution(event) {
@@ -418,44 +418,46 @@
         }
 
         // Open camera with at least minWidth and minHeight capabilities
-        async function openCamera(cameraId, minWidth /*, minHeight*/ ) {
+        async function openCamera(cameraId, minWidth) {
             const constraints = {
-                'audio': false, //{'echoCancellation': true},
+                'audio': false,
                 'video': {
                     'deviceId': cameraId,
                     'width': {
                         'min': minWidth
                     }
-                    /*,
-                                        'height': {
-                                            'min': minHeight
-                                        }*/
                 }
             }
 
             return await navigator.mediaDevices.getUserMedia(constraints);
         }
 
-        async function playVideoFromCamera(cameraId, minWidth = 800 /*, minHeight = 600*/ ) {
+        async function playVideoFromCamera(cameraId, minWidth = 800) {
             try {
-                const stream = await openCamera(cameraId, minWidth /*, minHeight*/ );
+                const stream = await openCamera(cameraId, minWidth);
                 const videoElement = document.querySelector('video#localVideo');
                 videoElement.srcObject = stream;
-                videoElement.play()
-                    .then(() => { // enable the button
-                        const btn = document.querySelector("#btnSnapshot");
-                        btn.disabled = false;
-                        btn.onclick = e => {
-                            takeASnap()
-                                .then(downloadPicture);
-                        };
-                    })
-                    .then(() => { // enable the button
-                        const btn = document.querySelector("#btnVideo");
-                        btn.disabled = false;
-                        btn.onclick = startRecording;
-                    })
-                savePreviousCameraResolution();
+                var playPromise = videoElement.play();
+
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(_ => {
+                            savePreviousCameraResolution();
+                        })
+                        .then(() => { // enable the button
+                            const btn = document.querySelector("#btnSnapshot");
+                            btn.disabled = false;
+                            btn.onclick = e => {
+                                takeASnap()
+                                    .then(downloadPicture);
+                            };
+                        })
+                        .then(() => { // enable the button
+                            const btn = document.querySelector("#btnVideo");
+                            btn.disabled = false;
+                            btn.onclick = startRecording;
+                        })
+                }
             } catch (error) {
                 const cameraResolution = document.getElementById('cameraResolutions');
                 const currentCamera = document.getElementById('availableCameras').value;
@@ -478,6 +480,20 @@
             cameraInformation.innerText = JSON.stringify(videoTracks[0].getSettings());
         }
 
+        function getSupportedConstraints() {
+            let constraintList = document.getElementById("constraintList");
+            let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+
+            for (let constraint in supportedConstraints) {
+                if (supportedConstraints.hasOwnProperty(constraint)) {
+                    let elem = document.createElement("li");
+
+                    elem.innerHTML = "<code>" + constraint + "</code>";
+                    constraintList.appendChild(elem);
+                }
+            }
+        }
+
         document.onreadystatechange = async function () {
             if (document.readyState == "complete") {
 
@@ -495,6 +511,7 @@
                 document.getElementById('outputResolutions').onchange = chooseOutputResolution;
                 document.getElementById('availableCameras').onchange = chooseCamera;
 
+                getSupportedConstraints();
                 setChoosableResolutions();
 
                 // Get the initial set of cameras connected
