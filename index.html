@@ -61,8 +61,8 @@
                 linear-gradient(to bottom, #999999 1px, transparent 1px);
         }
 
-        .camerainformation::before {
-            content: "Camera information:";
+        .cameraInformation::before {
+            content: "Camera information: ";
             font-weight: bold;
         }
 
@@ -112,12 +112,13 @@
     <div id="error" class="error"></div>
     <div id="position" class="info mouseposition"></div>
     <div id="distance" class="info distance"></div>
-    <div id="camerainformation" class="info camerainformation"></div>
+    <div id="cameraInformation" class="info cameraInformation"></div>
 
     <div id="menu">
         <button id="btnSnapshot" disabled>take a snapshot</button>
         <button id="btnVideo" disabled>start recording</button>
         <button id="btnToggleGrid">toggle grid</button>
+        <button id="btnGetCurrentCamInformation" onclick="getCurrentCamInformation();" >Get current camera information</button>
 
         <input type="text" id="gridDistance" value="" disabled>
         <button id="btnLoadGrid" onclick="createGrid(document.getElementById('gridDistance').value)" disabled>load
@@ -451,11 +452,19 @@
             } catch (error) {
                 console.error('Error opening video camera.', error);
                 alert(error);
+            } finally {
+                getCurrentCamInformation();
             }
         }
 
         function getCurrentCamInformation() {
+            console.log('getCurrentCameraInformation');
+            const videoElement = document.querySelector('video#localVideo');
+            let cameraInformation = document.getElementById('cameraInformation');
+            let videoTracks = (new MediaStream(videoElement.srcObject)).getVideoTracks();
 
+            console.dir(videoTracks[0].getSettings());
+            cameraInformation.innerText = JSON.stringify(videoTracks[0].getSettings());
         }
 
         document.onreadystatechange = async function () {
