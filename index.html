@@ -117,7 +117,9 @@
     <div id="error" class="error"></div>
     <div id="position" class="info mouseposition"></div>
     <div id="distance" class="info distance"></div>
-    <div id="cameraInformation" class="info cameraInformation"></div>
+    <div class="info cameraInformation">
+        <code id="cameraInformation"></code>
+    </div>
     <div id="supportedConstraints">The following media constraints are supported by your browser:
         <ul id="constraintList"></ul>
     </div>
@@ -380,6 +382,7 @@
         }
 
         async function chooseCameraResolution() {
+            console.log('chooseCameraResolution');
             const currentCamera = document.getElementById('availableCameras').value;
             const cameraResolution = document.getElementById('cameraResolutions').value.split('x');
             await playVideoFromCamera(currentCamera, cameraResolution[0]);
@@ -480,7 +483,9 @@
                 console.error('Error opening video camera.', error);
                 alert(error);
             } finally {
-                getCurrentCamInformation();
+                let currentCamInformation = getCurrentCamInformation();
+                console.log('finally: ' + currentCamInformation.deviceId);
+                document.getElementById('availableCameras').value = currentCamInformation.deviceId;
             }
         }
 
@@ -490,8 +495,10 @@
             let cameraInformation = document.getElementById('cameraInformation');
             let videoTracks = (new MediaStream(videoElement.srcObject)).getVideoTracks();
 
-            console.dir(videoTracks[0].getSettings());
-            cameraInformation.innerText = JSON.stringify(videoTracks[0].getSettings(), null, 2);
+            let settings = videoTracks[0].getSettings();
+            console.dir(settings);
+            cameraInformation.innerText = JSON.stringify(settings, null, 2);
+            return settings;
         }
 
         function getSupportedConstraints() {
@@ -529,10 +536,11 @@
                 setChoosableResolutions();
 
                 // Get the initial set of cameras connected
-                const videoCameras = await getConnectedDevices('videoinput')
+                const videoCameras = await getConnectedDevices('videoinput');
                 if (videoCameras && videoCameras.length > 0) {
                     await updateCameraList(videoCameras);
-                    await playVideoFromCamera(videoCameras[0].deviceId);
+                    const cameraId = document.getElementById('availableCameras').value;
+                    await playVideoFromCamera(cameraId);
                 }
 
                 // Listen for changes to media devices and update the list accordingly
