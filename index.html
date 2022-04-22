@@ -365,6 +365,11 @@
             });
         }
 
+        function savePreviousCameraResolution() {
+            const cameraResolution = document.getElementById('cameraResolutions').value;
+            localStorage.setItem('previousCameraResolution', cameraResolution);
+        }
+
         async function chooseCameraResolution() {
             const currentCamera = document.getElementById('availableCameras').value;
             const cameraResolution = document.getElementById('cameraResolutions').value.split('x');
@@ -449,7 +454,11 @@
                         btn.disabled = false;
                         btn.onclick = startRecording;
                     })
+                savePreviousCameraResolution();
             } catch (error) {
+                const cameraResolution = document.getElementById('cameraResolutions');
+                const previousCameraResolution = localStorage.getItem('previousCameraResolution');
+                cameraResolution.value = previousCameraResolution;
                 console.error('Error opening video camera.', error);
                 alert(error);
             } finally {
@@ -480,6 +489,7 @@
                 document.getElementById('grid').onclick = setDistance;
                 document.getElementById('btnToggleGrid').onclick = toggleGrid;
                 document.getElementById('cameraResolutions').onchange = chooseCameraResolution;
+                document.getElementById('cameraResolutions').onfocus = savePreviousCameraResolution;
                 document.getElementById('outputResolutions').onchange = chooseOutputResolution;
                 document.getElementById('availableCameras').onchange = chooseCamera;
 
