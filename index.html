@@ -61,6 +61,21 @@
                 linear-gradient(to bottom, #999999 1px, transparent 1px);
         }
 
+        .camerainformation::before {
+            content: "Camera information:";
+            font-weight: bold;
+        }
+
+        .distance::before {
+            content: "Distance: ";
+            font-weight: bold;
+        }
+
+        .mouseposition::before {
+            content: "Mouseposition: ";
+            font-weight: bold;
+        }
+
         .error {
             color: red;
             font-size: 1rem;
@@ -95,8 +110,9 @@
 
 <body>
     <div id="error" class="error"></div>
-    <div id="position" class="info">Mouseposition:</div>
-    <div id="distance" class="info">Distance:</div>
+    <div id="position" class="info mouseposition"></div>
+    <div id="distance" class="info distance"></div>
+    <div id="camerainformation" class="info camerainformation"></div>
 
     <div id="menu">
         <button id="btnSnapshot" disabled>take a snapshot</button>
@@ -137,10 +153,10 @@
         var p1 = new Object();
         var p2 = new Object();
 
-        function getPosition() {
+        function getPosition(event) {
             var p = new Object();
-            p.x = document.all ? event.offsetX : event.pageX;
-            p.y = document.all ? event.offsetY : event.pageY;
+            p.x = event.offsetX;
+            p.y = event.offsetY;
 
             return p;
         }
@@ -163,13 +179,12 @@
             var grid = document.querySelector('#grid');
             grid.style['background-size'] = d + "px " + d + "px";
 
-            var out = 'Distance: ' + d;
-            document.getElementById('distance').innerHTML = out;
+            document.getElementById('distance').innerHTML = d;
         }
 
         function showPosition(event) {
-            p = getPosition();
-            var out = 'Mouseposition: ' + p.x + ', ' + p.y;
+            p = getPosition(event);
+            var out = p.x + ', ' + p.y;
             document.getElementById('position').innerHTML = out;
         }
 
@@ -437,6 +452,10 @@
                 console.error('Error opening video camera.', error);
                 alert(error);
             }
+        }
+
+        function getCurrentCamInformation() {
+
         }
 
         document.onreadystatechange = async function () {
