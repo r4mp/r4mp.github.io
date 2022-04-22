@@ -483,7 +483,7 @@
             let videoTracks = (new MediaStream(videoElement.srcObject)).getVideoTracks();
 
             console.dir(videoTracks[0].getSettings());
-            cameraInformation.innerText = JSON.stringify(videoTracks[0].getSettings());
+            cameraInformation.innerText = JSON.stringify(videoTracks[0].getSettings(), null, 2);
         }
 
         function getSupportedConstraints() {
