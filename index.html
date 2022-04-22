@@ -366,8 +366,9 @@
         }
 
         function savePreviousCameraResolution() {
+            const currentCamera = document.getElementById('availableCameras').value;
             const cameraResolution = document.getElementById('cameraResolutions').value;
-            localStorage.setItem('previousCameraResolution', cameraResolution);
+            localStorage.setItem('previousCameraResolution-' + currentCamera, cameraResolution);
         }
 
         async function chooseCameraResolution() {
@@ -457,7 +458,8 @@
                 savePreviousCameraResolution();
             } catch (error) {
                 const cameraResolution = document.getElementById('cameraResolutions');
-                const previousCameraResolution = localStorage.getItem('previousCameraResolution');
+                const currentCamera = document.getElementById('availableCameras').value;
+                const previousCameraResolution = localStorage.getItem('previousCameraResolution-' + currentCamera);
                 cameraResolution.value = previousCameraResolution;
                 console.error('Error opening video camera.', error);
                 alert(error);
