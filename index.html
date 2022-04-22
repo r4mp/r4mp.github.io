@@ -161,12 +161,12 @@
             return p;
         }
 
-        function setDistance() {
+        function setDistance(event) {
             if (clicked === false) {
-                p1 = getPosition();
+                p1 = getPosition(event);
                 clicked = true;
             } else {
-                p2 = getPosition();
+                p2 = getPosition(event);
                 d = distance(p1, p2);
 
                 createGrid(d);
