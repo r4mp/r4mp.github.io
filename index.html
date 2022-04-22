@@ -105,6 +105,10 @@
         #menu select {
             width: 100%;
         }
+
+        #supportedConstraints {
+            padding: 2rem;
+        }
     </style>
 </head>
 
@@ -113,7 +117,9 @@
     <div id="position" class="info mouseposition"></div>
     <div id="distance" class="info distance"></div>
     <div id="cameraInformation" class="info cameraInformation"></div>
-    <ul id="constraintList"></ul>
+    <div id="supportedConstraints">The following media constraints are supported by your browser:
+        <ul id="constraintList"></ul>
+    </div>
 
     <div id="menu">
         <button id="btnSnapshot" disabled>take a snapshot</button>
