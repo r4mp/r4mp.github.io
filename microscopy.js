@@ -246,7 +246,6 @@ function savePreviousCameraResolution() {
 }
 
 async function chooseCameraResolution() {
-  console.log("chooseCameraResolution");
   const currentCamera = document.getElementById("availableCameras").value;
   const cameraResolution = document
     .getElementById("cameraResolutions")
@@ -290,7 +289,6 @@ async function updateCameraList(cameras) {
   const availableCameras = document.getElementById("availableCameras");
   removeAll(availableCameras);
   if (cameras && cameras.length > 0) {
-    //console.dir(cameras);
     cameras.forEach((camera) => {
       const cameraOption = new Option(camera.label, camera.deviceId);
       availableCameras.add(cameraOption);
@@ -355,20 +353,17 @@ async function playVideoFromCamera(cameraId, minWidth = 800) {
     alert(error);
   } finally {
     let currentCamInformation = getCurrentCamInformation();
-    console.log("finally: " + currentCamInformation.deviceId);
     document.getElementById("availableCameras").value =
       currentCamInformation.deviceId;
   }
 }
 
 function getCurrentCamInformation() {
-  console.log("getCurrentCameraInformation");
   const videoElement = document.querySelector("video#localVideo");
   let cameraInformation = document.getElementById("cameraInformation");
   let videoTracks = new MediaStream(videoElement.srcObject).getVideoTracks();
 
   let settings = videoTracks[0].getSettings();
-  console.dir(settings);
   cameraInformation.innerText = JSON.stringify(settings, null, 2);
   return settings;
 }
@@ -391,7 +386,7 @@ document.onreadystatechange = async function () {
   if (document.readyState == "complete") {
     if (!navigator.mediaDevices.getUserMedia) {
       const err = "getUserMedia not supported in this browser.";
-      console.log(err);
+      console.error(err);
       return alert(err);
     }
 
